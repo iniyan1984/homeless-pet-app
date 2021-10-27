@@ -8,7 +8,7 @@ import random
 from transformers import GPT2Config, GPT2DoubleHeadsModel, GPT2Tokenizer
 from api.chat_helper import model_utils
 
-trained_model_path = "../persistent-folder/data/final_gpt2doublehead"
+trained_model_path = "/app/persistent-folder/data/final_gpt2doublehead"
 model = None
 tokenizer = None
 dogs_memos = None

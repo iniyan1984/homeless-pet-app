@@ -11,7 +11,7 @@ from api.chat_helper import chat_utils
 from tempfile import TemporaryDirectory
 
 
-local_storage_path = "../persistent-folder/data/"
+local_storage_path = "/app/persistent-folder/data/"
 print("This iw working....")
 # load the dataset
 df = pd.read_csv(local_storage_path + "full_dogs_data.csv")

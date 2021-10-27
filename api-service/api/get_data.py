@@ -7,7 +7,7 @@ from api.feature_extractor import FeatureExtractor
 import re
 import os
 
-local_storage_path = '../persistent-folder/data/'
+local_storage_path = '/app/persistent-folder/data/'
 data_path = "persistent-folder"
 
 MODEL_PATH = local_storage_path + "vision_model"

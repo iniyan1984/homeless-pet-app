@@ -18,7 +18,7 @@ class Similar extends Component {
         BASE_API_URL = BASE_API_URL.replace(HOSTNAME_TAG, window.location.hostname);
         }
 
-        fetch(`${BASE_API_URL}/api/dogs/similar/${this.state.id}`)
+        fetch(`${BASE_API_URL}/dogs/similar/${this.state.id}`)
         .then(response => response.json())
         .then(dogs => {
             this.setState({ dogs: dogs.data})

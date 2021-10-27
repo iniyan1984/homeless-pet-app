@@ -52,7 +52,7 @@ class App extends Component {
     BASE_API_URL = BASE_API_URL.replace(HOSTNAME_TAG, window.location.hostname);
   }
 
-  fetch(`${BASE_API_URL}/api/dogs/${this.state.total_dogs}`)
+  fetch(`${BASE_API_URL}/dogs/${this.state.total_dogs}`)
   .then(response => response.json())
   .then(results => {
   this.setState({ dogs: results })

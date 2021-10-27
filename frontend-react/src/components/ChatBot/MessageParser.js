@@ -13,7 +13,7 @@ class MessageParser {
       BASE_API_URL = BASE_API_URL.replace(HOSTNAME_TAG, window.location.hostname);
     }
 
-      fetch(`${BASE_API_URL}/api/chat/${this.state.dog_id}/${message}`)
+      fetch(`${BASE_API_URL}/chat/${this.state.dog_id}/${message}`)
       .then(resp => resp.json())
       .then(response => {
         this.actionProvider.helloWorldHandler(response.data)

@@ -82,33 +82,33 @@ async def predict(
         return {'data': similar_dogs}
 
 # this route will handle chatbot messages
-# @app.get("/chat/{dog_id}/{question}")
-# def respond(dog_id : int, question):
-#     global prev_dog_id
-#     global current_dog_id
-#     global messages_received
-#     current_dog_id = dog_id
-#     # get dog's information
-#     dog = df[df["AnimalInternal-ID"] == dog_id]
+@app.get("/chat/{dog_id}/{question}")
+def respond(dog_id : int, question):
+    global prev_dog_id
+    global current_dog_id
+    global messages_received
+    current_dog_id = dog_id
+    # get dog's information
+    dog = df[df["AnimalInternal-ID"] == dog_id]
 
-#     if ("gender" in question.lower()) or ("sex" in question.lower()) \
-#     or ("boy" in question.lower()) or ("girl" in question.lower()):
-#         gender = "boy." if dog.AnimalSex.values[0] == 'Male' else 'girl'
-#         return {"data": f"I am a {gender}"}
+    if ("gender" in question.lower()) or ("sex" in question.lower()) \
+    or ("boy" in question.lower()) or ("girl" in question.lower()):
+        gender = "boy." if dog.AnimalSex.values[0] == 'Male' else 'girl'
+        return {"data": f"I am a {gender}"}
     
-#     print(current_dog_id, prev_dog_id)
-#     if (current_dog_id != prev_dog_id):
-#         messages_received = ["hi", "woof woof"]
-#     print(messages_received)
+    print(current_dog_id, prev_dog_id)
+    if (current_dog_id != prev_dog_id):
+        messages_received = ["hi", "woof woof"]
+    print(messages_received)
     
-#     chat = {
-#         "dog": dog.squeeze(),
-#         "history": messages_received,
-#         "input_message": question
-#     }
-#     response = chat_utils.chat_with_dog(chat)
-#     answer = response['response_message']
-#     messages_received.extend([question, answer])
-#     prev_dog_id = current_dog_id
+    chat = {
+        "dog": dog.squeeze(),
+        "history": messages_received,
+        "input_message": question
+    }
+    response = chat_utils.chat_with_dog(chat)
+    answer = response['response_message']
+    messages_received.extend([question, answer])
+    prev_dog_id = current_dog_id
     
-    # return {"data": answer}
+    return {"data": answer}

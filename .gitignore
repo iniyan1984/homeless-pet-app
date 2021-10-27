@@ -1,0 +1,4 @@
+frontend-react/node_modules/
+persistent-folder/
+.DS_STORE
+secrets/

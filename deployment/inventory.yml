@@ -1,0 +1,22 @@
+all:
+    vars:
+      ansible_user: sa_101395039339227752724
+      ansible_ssh_private_key_file: "../secrets/ssh-key-deployment"
+      gcp_service_account_file: "../secrets/deployment.json"
+      gcp_service_account_email: "deployment@ai5-c1-group1.iam.gserviceaccount.com"
+      gcp_auth_kind: "serviceaccount"
+      gcp_scopes: "https://www.googleapis.com/auth/compute"
+      gcp_project: "ai5-c1-group1"
+      gcp_region: "us-central1"
+      gcp_zone: "us-central1-a"
+      docker_network_name: "appnetwork"
+      persistent_disk_name: "demo-disk-pet"
+      persistent_disk_size: 50
+      machine_instance_name: "demo-pet-app"
+      machine_type: "n2-standard-2"
+      machine_disk_size: 30
+
+    children:
+        appserver:
+            hosts:
+                34.135.79.27:

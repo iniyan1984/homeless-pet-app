@@ -45,7 +45,7 @@ app.add_middleware(
 #     pass
 
 # load data
-df = get_full_dogs()
+df = load_full_dogs()
 
 @app.get('/test')
 def test():

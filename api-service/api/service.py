@@ -6,13 +6,13 @@ from fastapi import FastAPI, File
 from fastapi.middleware.cors import CORSMiddleware
 from api.get_data import get_dogs, get_similar_ids
 from api.get_data import get_similar_dogs
-# from api.get_data import ensure_data_loaded
+from api.get_data import ensure_data_loaded
 from api.chat_helper import chat_utils
 from tempfile import TemporaryDirectory
 
 
 local_storage_path = "/app/persistent-folder/data/"
-print("This iw working....")
+
 # load the dataset
 df = pd.read_csv(local_storage_path + "full_dogs_data.csv")
 
@@ -38,10 +38,10 @@ app.add_middleware(
 )
 
 # Application start/stop hooks
-# @app.on_event("startup")
-# async def startup():
-#     ensure_data_loaded()
-#     pass
+@app.on_event("startup")
+async def startup():
+    ensure_data_loaded()
+    pass
 
 @app.get('/test')
 def test():

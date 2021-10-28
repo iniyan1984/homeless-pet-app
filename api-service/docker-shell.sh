@@ -22,7 +22,7 @@ docker build -t $IMAGE_NAME -f Dockerfile .
 docker run --rm --name $IMAGE_NAME -ti \
 --mount type=bind,source="$BASE_DIR",target=/app \
 -p 8000:8000 \
--e DEV=1  \
+-e DEV=10  \
 -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
 -e GCP_PROJECT=$GCP_PROJECT \
 -e GCP_ZONE=$GCP_ZONE $IMAGE_NAME

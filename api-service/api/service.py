@@ -14,7 +14,9 @@ from tempfile import TemporaryDirectory
 local_storage_path = "/app/persistent-folder/data/"
 
 # load the dataset
-df = pd.read_csv(local_storage_path + "full_dogs_data.csv")
+def load_full_dogs():
+    df = pd.read_csv(local_storage_path + "full_dogs_data.csv")
+    return df
 
 messages_received = []
 current_dog_id = 0
@@ -42,6 +44,9 @@ app.add_middleware(
 async def startup():
     ensure_data_loaded()
     pass
+
+# load data
+df = get_full_dogs()
 
 @app.get('/test')
 def test():

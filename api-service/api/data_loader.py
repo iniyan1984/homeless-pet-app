@@ -4,7 +4,7 @@ import re
 import os
 
 
-data_path = "/app/api-service/persistent-folder"
+data_path = "/app/api-service"
 DATA_URL = "https://storage.googleapis.com/artifacts.ai5-c1-group1.appspot.com/data/persistent-folder.zip"
 
 def download_file(packet_url, base_path="", extract=False, headers=None):
@@ -31,7 +31,7 @@ def download_file(packet_url, base_path="", extract=False, headers=None):
 def ensure_data_loaded():
     try:
         print("ensure_data_loaded()")
-        if not os.path.exists(data_path):
+        if not os.path.exists(data_path+"/persistent-folder"):
             print("Downloading...")
             download_file(DATA_URL, base_path=data_path, extract=True)
         else:

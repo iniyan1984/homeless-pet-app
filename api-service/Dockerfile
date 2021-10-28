@@ -46,7 +46,7 @@ WORKDIR /app
 ADD --chown=app:app Pipfile Pipfile.lock /app/
 
 RUN pipenv sync
-RUN pipenv pip install torch
+RUN pipenv run pip install torch
 
 # # Add the rest of the source code. This is done last so we don't invalidate all
 # # layers when we change a line of code.

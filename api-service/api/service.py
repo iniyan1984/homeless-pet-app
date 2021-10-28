@@ -6,7 +6,7 @@ from fastapi import FastAPI, File
 from fastapi.middleware.cors import CORSMiddleware
 from api.get_data import get_dogs, get_similar_ids
 from api.get_data import get_similar_dogs
-from api.get_data import ensure_data_loaded
+from api.data_loader import ensure_data_loaded
 from api.chat_helper import chat_utils
 from tempfile import TemporaryDirectory
 

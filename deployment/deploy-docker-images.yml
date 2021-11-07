@@ -3,37 +3,27 @@
   hosts: localhost
   gather_facts: false
   tasks:
-  - name: "Get timestamp for docker tag"
-    shell: "(date +%Y%m%d%H%M%S)"
-    register: tag
-  - name: Print tag
-    debug:
-      var: tag
+  - name: Build backend-api container image
+    community.general.docker_image:
+      build:
+        path: /api-service
+      name: gcr.io/{{ gcp_project }}/ai5project:austin-pet-alive-api-service
+      source: build
+  - name: Push backend-api image to GCR
+    community.general.docker_image:
+      name: gcr.io/{{ gcp_project }}/ai5project:austin-pet-alive-api-service
+      repository: gcr.io/{{ gcp_project }}/ai5project:austin-pet-alive-api-service
+      push: yes
+      source: local
   - name: Build frontend container image
     community.general.docker_image:
       build:
         path: /frontend-react
-      name: gcr.io/{{ gcp_project }}/homeless-pet-app-frontend-react:{{ tag.stdout}}
+      name: gcr.io/{{ gcp_project }}/ai5project:austin-pet-alive-frontend-react
       source: build
   - name: Push frontend image to GCR
     community.general.docker_image:
-      name: gcr.io/{{ gcp_project }}/homeless-pet-app-frontend-react:{{ tag.stdout}}
-      repository: gcr.io/{{ gcp_project }}/homeless-pet-app-frontend-react:{{ tag.stdout}}
+      name: gcr.io/{{ gcp_project }}/ai5project:austin-pet-alive-frontend-react
+      repository: gcr.io/{{ gcp_project }}/ai5project:austin-pet-alive-frontend-react
       push: yes
       source: local
-  - name: Build api-service container image
-    community.general.docker_image:
-      build:
-        path: /api-service
-      name: gcr.io/{{ gcp_project }}/homeless-pet-api-service:{{ tag.stdout}}
-      source: build
-  - name: Push api-service image to GCR
-    community.general.docker_image:
-      name: gcr.io/{{ gcp_project }}/homeless-pet-api-service:{{ tag.stdout}}
-      repository: gcr.io/{{ gcp_project }}/homeless-pet-api-service:{{ tag.stdout}}
-      push: yes
-      source: local
-  - name: "Save docker tag"
-    shell: echo {{ tag.stdout}} > ~/.docker-tag
-  - name: "Remove all unused containers"
-    shell: docker system prune -a

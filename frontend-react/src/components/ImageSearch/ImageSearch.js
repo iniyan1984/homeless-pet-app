@@ -38,7 +38,7 @@ class ImageSearch extends Component {
     console.log(this.state);
     let form_data = new FormData();
     form_data.append('file', this.state.image);
-    let url = `${BASE_API_URL}/file`;
+    let url = `${BASE_API_URL}/api1/file`;
     axios.post(url, form_data, {
       headers: {
         'content-type': 'multipart/form-data'

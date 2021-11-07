@@ -1,0 +1,233 @@
+---
+- name: "Create Kubernetes Cluster using one cluster and deploy multiple containers (frontend, api1)"
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    cluster_name: "demo-k8s-cluster"
+    machine_type: "n1-standard-1"
+    machine_disk_size: 30
+    initial_node_count: 2
+
+  tasks:
+  - name: "Create a GKE cluster"
+    google.cloud.gcp_container_cluster:
+      name: "{{cluster_name}}"
+      initial_node_count: "{{ initial_node_count }}"
+      location: "{{ gcp_zone }}"
+      project: "{{ gcp_project }}"
+      release_channel:
+        channel: "UNSPECIFIED"
+      ip_allocation_policy:
+        use_ip_aliases: "yes"
+      auth_kind: "{{ gcp_auth_kind }}"
+      service_account_file: "{{ gcp_service_account_file }}"
+      state: "{{ cluster_state }}"
+    register: cluster
+  
+  - name: "Create a Node Pool"
+    google.cloud.gcp_container_node_pool:
+      name: default-pool
+      initial_node_count: "{{ initial_node_count }}"
+      cluster: "{{ cluster }}"
+      location: "{{ gcp_zone }}"
+      project: "{{ gcp_project }}"
+      config:
+        machine_type: "{{ machine_type }}"
+        image_type: "COS"
+        disk_size_gb: "{{ machine_disk_size }}"
+        oauth_scopes:
+          - "https://www.googleapis.com/auth/devstorage.read_only"
+          - "https://www.googleapis.com/auth/logging.write"
+          - "https://www.googleapis.com/auth/monitoring"
+          - "https://www.googleapis.com/auth/servicecontrol"
+          - "https://www.googleapis.com/auth/service.management.readonly"
+          - "https://www.googleapis.com/auth/trace.append"
+      autoscaling:
+        enabled: "yes"
+        min_node_count: "1"
+        max_node_count: "{{ initial_node_count }}"
+      management:
+        auto_repair: "yes"
+        auto_upgrade: "yes"
+      auth_kind: "{{ gcp_auth_kind }}"
+      service_account_file: "{{ gcp_service_account_file }}"
+      state: "{{ cluster_state }}"
+  
+  - name: "Connect to cluster (update kubeconfig)"
+    shell: "gcloud container clusters get-credentials {{ cluster.name }} --zone {{ gcp_zone }} --project {{ gcp_project }}"
+    when: cluster_state == "present"
+
+  - name: "Create Namespace"
+    k8s:
+      name: "{{cluster_name}}-namespace"
+      api_version: v1
+      kind: Namespace
+      state: present
+    when: cluster_state == "present"
+
+  - name: "Add nginx-ingress helm repo"
+    community.kubernetes.helm_repository:
+      name: nginx-stable
+      repo_url: https://helm.nginx.com/stable
+    when: cluster_state == "present"
+
+  - name: "Install nginx-ingress"
+    community.kubernetes.helm:
+      name: nginx-ingress
+      namespace: "{{cluster_name}}-namespace"
+      chart_ref: nginx-stable/nginx-ingress
+      state: present
+    when: cluster_state == "present"
+
+  - name: "Create Deployment for Frontend"
+    k8s:
+      state: present
+      definition:
+        apiVersion: v1
+        kind: Deployment
+        metadata:
+          name: frontend
+          namespace: "{{cluster_name}}-namespace"
+        spec:
+          selector:
+            matchLabels:
+              run: frontend
+          template:
+            metadata:
+              labels:
+                run: frontend
+            spec:
+              containers:
+              - image: gcr.io/{{ gcp_project }}/ai5project:austin-pet-alive-frontend-react
+                imagePullPolicy: IfNotPresent
+                name: frontend
+                ports:
+                - containerPort: 80
+                  protocol: TCP
+    when: cluster_state == "present"
+
+  - name: "Create Deployment for API 1"
+    k8s:
+      state: present
+      definition:
+        apiVersion: v1
+        kind: Deployment
+        metadata:
+          name: api1
+          namespace: "{{cluster_name}}-namespace"
+        spec:
+          selector:
+            matchLabels:
+              run: api1
+          template:
+            metadata:
+              labels:
+                run: api1
+            spec:
+              containers:
+              - image: gcr.io/{{ gcp_project }}/ai5project:austin-pet-alive-api-service
+                imagePullPolicy: IfNotPresent
+                name: api1
+                ports:
+                - containerPort: 8000
+                  protocol: TCP
+    when: cluster_state == "present"
+
+  - name: "Create Service for Frontend"
+    k8s:
+      state: present
+      definition:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: frontend
+          namespace: "{{cluster_name}}-namespace"
+        spec:
+          ports:
+          - port: 80
+            protocol: TCP
+            targetPort: 80
+          selector:
+            run: frontend
+          type: NodePort
+    when: cluster_state == "present"
+
+  - name: "Create Service for API 1"
+    k8s:
+      state: present
+      definition:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: api1
+          namespace: "{{cluster_name}}-namespace"
+        spec:
+          ports:
+          - port: 8000
+            protocol: TCP
+            targetPort: 8000
+          selector:
+            run: api1
+          type: NodePort
+    when: cluster_state == "present" 
+
+  - name: Wait for Ingress Nginx to get ready
+    shell: |
+      #!/bin/bash
+      kubectl get service nginx-ingress-nginx-ingress --namespace="{{cluster_name}}-namespace" -ojson | jq -r '.status.loadBalancer.ingress[].ip'
+    register: nginx_ingress
+    delay: 10
+    retries: 20
+    until: nginx_ingress.stderr == ""
+    when: cluster_state == "present"
+
+  - name: Set Nginx Ingress IP
+    set_fact:
+      nginx_ingress_ip: "{{nginx_ingress.stdout}}"
+    when: cluster_state == "present"
+
+  - name: Debug Ingress Nginx IP Address
+    debug:
+      msg: "Ingress Nginx IP Address: {{ nginx_ingress_ip }}"
+    when: cluster_state == "present"
+
+  - name: Debug vars
+    debug:
+      var: nginx_ingress_ip
+      verbosity: 0
+    when: cluster_state == "present"
+
+  - name: "Create Ingress Controller"
+    k8s:
+      state: present
+      definition:
+        apiVersion: networking.k8s.io/v1
+        kind: Ingress
+        metadata:
+          name: ingress-resource
+          namespace: "{{cluster_name}}-namespace"
+          annotations:
+            kubernetes.io/ingress.class: "nginx"
+            nginx.ingress.kubernetes.io/ssl-redirect: "false"
+            nginx.org/rewrites: "serviceName=frontend rewrite=/;serviceName=api1 rewrite=/"
+        spec:
+          rules:
+          - host: "{{ nginx_ingress_ip }}.nip.io" # "{{ nginx_ingress_ip }}.sslip.io" # Host requires a domain and not just an IP
+            http:
+              paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: frontend
+                    port:
+                      number: 80
+              - path: /api1/
+                pathType: Prefix
+                backend:
+                  service:
+                    name: api1
+                    port:
+                      number: 8000              
+    when: cluster_state == "present"

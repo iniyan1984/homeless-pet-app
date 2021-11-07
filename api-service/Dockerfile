@@ -31,9 +31,6 @@ RUN set -ex; \
     useradd -ms /bin/bash app -d /home/app -u 1000 -p "$(openssl passwd -1 Passw0rd)" && \
     mkdir -p /app && \
     chown app:app /app
-RUN apt-get update
-RUN apt-get -y install wget
-RUN apt-get -y install unzip
 
 # # Expose port
 EXPOSE 8000

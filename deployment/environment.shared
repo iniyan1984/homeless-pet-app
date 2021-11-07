@@ -1,0 +1,4 @@
+export IMAGE_NAME="austinpetslive-deployment"
+export GCP_PROJECT="austinpetalive-kubernetes"
+export GCP_ZONE="us-east1-c"
+export GOOGLE_APPLICATION_CREDENTIALS=/secrets/ansible.json

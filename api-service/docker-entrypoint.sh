@@ -19,8 +19,10 @@ The following commands are available:
 \033[0m
 "
 
-if [ "${DEV}" = 1 ]; then
-  pipenv shell
-else
-  uvicorn_server_production
-fi
+#if [ "${DEV}" = 1 ]; then
+#  pipenv shell
+#else
+#  uvicorn_server_production
+#fi
+
+pipenv run uvicorn api.service:app --host 0.0.0.0 --port 8000 --lifespan on
